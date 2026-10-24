@@ -34,9 +34,16 @@ if (apiKey) {
   });
 }
 
+const withTimeout = <T>(promise: Promise<T>, ms: number, msg: string): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(msg)), ms)),
+  ]);
+};
+
 app.post('/api/gemini/generate', async (req, res) => {
   try {
-    const { prompt, systemInstruction } = req.body;
+    const { prompt, systemInstruction, jsonMode } = req.body;
     if (!ai) {
       return res.status(200).json({
         success: false,
@@ -46,21 +53,37 @@ app.post('/api/gemini/generate', async (req, res) => {
     }
 
     let responseText = '';
+    const config: any = {};
+    if (systemInstruction) config.systemInstruction = systemInstruction;
+    if (jsonMode) config.responseMimeType = 'application/json';
+
     try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: prompt,
-        config: systemInstruction ? { systemInstruction } : undefined,
-      });
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt,
+          config: Object.keys(config).length > 0 ? config : undefined,
+        }),
+        7000,
+        'Tiempo de espera agotado al conectar con Gemini 3.8 Flash'
+      );
       responseText = response.text || '';
-    } catch (_primaryErr) {
-      // Fallback a gemini-3.1-flash-lite si gemini-3.8-flash tiene alta demanda
-      const fallbackResponse = await ai.models.generateContent({
-        model: 'gemini-3.1-flash-lite',
-        contents: prompt,
-        config: systemInstruction ? { systemInstruction } : undefined,
-      });
-      responseText = fallbackResponse.text || '';
+    } catch (_primaryErr: any) {
+      // Fallback a gemini-3.1-flash-lite con timeout de 5 segundos
+      try {
+        const fallbackResponse = await withTimeout(
+          ai.models.generateContent({
+            model: 'gemini-3.1-flash-lite',
+            contents: prompt,
+            config: Object.keys(config).length > 0 ? config : undefined,
+          }),
+          5000,
+          'Tiempo de espera agotado al conectar con Gemini 3.1 Flash Lite'
+        );
+        responseText = fallbackResponse.text || '';
+      } catch (fallbackErr: any) {
+        throw new Error(fallbackErr?.message || _primaryErr?.message || 'Error de conexión externa a Gemini');
+      }
     }
 
     return res.json({
@@ -72,7 +95,7 @@ app.post('/api/gemini/generate', async (req, res) => {
     return res.status(200).json({
       success: false,
       fallback: true,
-      error: error?.message || 'IA procesada mediante motor contextual.',
+      error: error?.message || 'Error de comunicación con la API de IA.',
     });
   }
 });

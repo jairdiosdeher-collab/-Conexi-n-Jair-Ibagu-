@@ -167,6 +167,38 @@ export interface Appointment {
   reminderSent: boolean;
 }
 
+export type SermonType = 
+  | 'expositivo' 
+  | 'textual' 
+  | 'tematico' 
+  | 'evangelistico' 
+  | 'doctrinal' 
+  | 'pastoral' 
+  | 'devocional';
+
+export interface SermonPoint {
+  title: string;
+  scriptureExplanation: string;
+  contemporaryIllustration: string;
+  practicalApplication: string;
+}
+
+export interface SermonExegesisKeyTerm {
+  originalWord: string;
+  transliteration: string;
+  language: 'hebreo' | 'griego' | 'arameo';
+  meaning: string;
+  theologicalDepth: string;
+}
+
+export interface SermonDevotionalDay {
+  day: string;
+  title: string;
+  passage: string;
+  reflection: string;
+  prayer: string;
+}
+
 export interface Sermon {
   id: string;
   title: string;
@@ -176,17 +208,23 @@ export interface Sermon {
   homileticalIdea: string;
   objective: string;
   introduction: string;
-  points: {
-    title: string;
-    scriptureExplanation: string;
-    contemporaryIllustration: string;
-    practicalApplication: string;
-  }[];
+  points: SermonPoint[];
   conclusion: string;
   callToAction: string;
   tags: string[];
   dateCreated: string;
   targetAudience: string;
+  // Campos homiléticos y teológicos extendidos
+  sermonType?: SermonType;
+  durationMinutes?: number;
+  bibleTranslation?: string;
+  historicalContext?: string;
+  literaryContext?: string;
+  theologicalContext?: string;
+  keyTerms?: SermonExegesisKeyTerm[];
+  smallGroupQuestions?: string[];
+  devotionalDays?: SermonDevotionalDay[];
+  generationSource?: 'gemini-3.8-flash' | 'motor-contextual-hermeneutico';
 }
 
 export interface SmallGroupResource {

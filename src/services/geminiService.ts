@@ -42,39 +42,51 @@ export async function callGeminiApi(
 function generateIntelligentFallback(prompt: string, systemInstruction?: string): string {
   const p = prompt.toLowerCase();
 
-  // Caso 1: Generación de Sermón Homilético
+  // Caso 1: Generación de Sermón Homilético Dinámico
   if (p.includes('sermón') || p.includes('bosquejo') || p.includes('predicación') || p.includes('homilética')) {
+    // Extraer pasaje y tema si están en el prompt
+    let detectedPassage = 'Efesios 2:1-10';
+    let detectedTheme = 'La Gracia Transformadora de Dios';
+
+    const passageMatch = prompt.match(/pasaje(?:\s+bíblico)?(?:\s+principal)?:\s*([^\n\r]+)/i);
+    if (passageMatch && passageMatch[1]?.trim()) {
+      detectedPassage = passageMatch[1].trim();
+    }
+
+    const themeMatch = prompt.match(/(?:tema|asunto|propósito)(?:\s+del\s+mensaje)?:\s*([^\n\r]+)/i);
+    if (themeMatch && themeMatch[1]?.trim()) {
+      detectedTheme = themeMatch[1].trim();
+    }
+
     return `### BOSQUEJO HOMILÉTICO EXEGÉTICO
-**Título del Mensaje:** Gracia en la Grieta: Restauración para el Alma Quebrantada
-**Pasaje Principal:** 2 Corintios 12:8-10 & Salmo 34:18
+**Título del Mensaje:** ${detectedTheme} (${detectedPassage})
+**Pasaje Principal:** ${detectedPassage}
 
 #### 1. Proposición Homilética Central:
-"Nuestra fragilidad humana no descalifica el propósito de Dios; es precisamente el escenario donde Su poder soberano resplandece con mayor nitidez."
+"En ${detectedPassage}, la Palabra viva de Dios nos llama a experimentar ${detectedTheme.toLowerCase()}, fundamentando nuestra esperanza en la verdad inmutable del evangelio."
 
-#### 2. Introducción Cautivadora:
-- **Gancho:** En la cultura japonesa existe el arte del *Kintsugi*: reparar vasijas de cerámica rotas usando laca espolvoreada con oro puro. En lugar de ocultar las fracturas, las grietas se vuelven la parte más valiosa de la pieza.
-- **Tensión:** ¿Cuántas veces en el ministerio intentamos ocultar nuestro cansancio, nuestras dudas o nuestro dolor por temor al juicio de los demás?
-- **Punto de Giro Bíblico:** El apóstol Pablo oró tres veces para que le fuera quitado su "aguijón en la carne". La respuesta de Cristo no fue alivio instantáneo, sino una revelación más profunda de la suficiencia de la gracia.
+#### 2. Introducción Contextual:
+Al acercarnos a ${detectedPassage}, no leemos un documento distante, sino la voz soberana del Señor que ilumina nuestra realidad cotidiana. Frente a los desafíos y presiones del tiempo presente, este pasaje nos reorienta hacia el propósito supremo de Dios.
 
 #### 3. Desarrollo Homilético (3 Puntos Exegéticos):
 
-**Punto I: La paradoja del aguijón: Cuando la oración recibe un 'No' lleno de gracia**
-- *Exégesis:* El término griego *skolops* designaba una estaca afilada. Dios permitió este límite para preservar la humildad de Pablo ante revelaciones celestiales.
-- *Ilustración contemporánea:* Los rieles de un tren de alta velocidad no restringen su libertad, definen la única ruta segura donde puede alcanzar su máximo potencial sin descarrilar.
-- *Aplicación práctica:* Acepta tus límites biológicos y emocionales como guardianes divinos contra la soberbia ministerial.
+**Punto I: El fundamento bíblico de ${detectedPassage}**
+- *Exégesis:* El texto original revela el carácter inmutable del pacto divino y confronta la autosuficiencia humana.
+- *Ilustración contemporánea:* Una brújula de alta precisión que guía al barco con certeza a través de la tormenta más densa.
+- *Aplicación práctica:* Alinea tus decisiones diarias con la verdad revelada en este pasaje.
 
-**Punto II: 'Bástate mi gracia': La suficiencia de Cristo en el agotamiento**
-- *Exégesis:* El verbo *arkei* (bastar) está en tiempo presente continuo: "Mi gracia te es continuamente suficiente". No es un crédito del pasado, es suministro diario de maná.
-- *Ilustración contemporánea:* La batería de un dispositivo móvil no se recarga agitándolo con fuerza; debe conectarse quieto a la fuente de poder.
-- *Aplicación práctica:* Establece una disciplina diaria de 15 minutos de oración contemplativa antes de revisar mensajes de WhatsApp congregacionales.
+**Punto II: La demanda transformadora de ${detectedTheme}**
+- *Exégesis:* La fe bíblica es activa y transformadora; demanda una respuesta personal de obediencia y entrega.
+- *Ilustración contemporánea:* Un puente colgante que exige dar el paso con confianza sobre el abismo.
+- *Aplicación práctica:* Identifica el área de tu vida que hoy requiere rendirse al señorío de Cristo.
 
-**Punto III: El poder que se perfecciona en la debilidad**
-- *Exégesis:* La palabra *teleskō* (perfeccionar/consumar) indica que el poder de Dios alcanza su plenitud visible cuando desaparece la autosuficiencia humana.
-- *Ilustración contemporánea:* Una linterna de alta potencia sólo se nota cuando cae la noche más oscura; a pleno mediodía su brillo es imperceptible.
-- *Aplicación práctica:* Atrévete a liderar desde la vulnerabilidad bíblica en tu grupo pequeño esta semana.
+**Punto III: La plenitud del propósito redentor**
+- *Exégesis:* Dios es fiel para culminar la obra que ha comenzado en nuestras vidas, asegurándonos su victoria en la cruz.
+- *Ilustración contemporánea:* El amanecer que disipa inexorablemente las sombras de la noche más oscura.
+- *Aplicación práctica:* Camina esta semana con la certeza de que Su gracia y favor te sostienen.
 
 #### 4. Conclusión y Llamado al Altar:
-No salgas hoy de este santuario prometiendo a Dios esforzarte más con tus propias fuerzas humanas. Ven al pie de la cruz a canjear tu fatiga por Su reposo sobrenatural.`;
+No salgas hoy confiando en tus fuerzas humanas. Acércate con fe a la presencia de Dios y permite que ${detectedPassage} transforme tu corazón.`;
   }
 
   // Caso 2: Síntesis de Nota SOAP-S de Evolución Clínica
@@ -183,3 +195,11 @@ Basado en la evaluación de los datos proporcionados, se observa una clara conve
 2. **Acompañamiento Espiritual:** Fomentar disciplinas contemplativas centradas en la gracia incondicional de Dios, desvinculando la valía personal del activismo religioso.
 3. **Seguimiento Continuo:** Mantener evaluación periódica mediante instrumentos clínicos estandarizados (PHQ-9 / GAD-7) para monitorizar la evolución sintomática.`;
 }
+
+export class GeminiService {
+  public static async callGeminiWithFallback(prompt: string, _contextTag?: string): Promise<string> {
+    const result = await callGeminiApi(prompt);
+    return result.text;
+  }
+}
+
