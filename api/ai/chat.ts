@@ -6,7 +6,7 @@ function applyCors(req: any, res: any) {
   if (allowedOrigin && origin === allowedOrigin) {
     res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
     res.setHeader("Vary", "Origin");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   }
 }
@@ -14,8 +14,18 @@ function applyCors(req: any, res: any) {
 export default async function handler(req: any, res: any) {
   applyCors(req, res);
   if (req.method === "OPTIONS") return res.status(204).end();
+
+  // The same URL supports the UI connection check (GET) and AI requests (POST).
+  if (req.method === "GET") {
+    return res.status(200).json({
+      success: true,
+      status: "ok",
+      service: "jairrestaura-gemini-backend",
+      geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    });
+  }
   if (req.method !== "POST") {
-    res.setHeader("Allow", "POST, OPTIONS");
+    res.setHeader("Allow", "GET, POST, OPTIONS");
     return res.status(405).json({ success: false, error: "Método no permitido." });
   }
 
@@ -60,7 +70,6 @@ export default async function handler(req: any, res: any) {
     }
     return res.status(200).json({ success: true, text: responseText });
   } catch (error: any) {
-    // Avoid returning provider internals, request contents, or secrets to the browser.
     console.error("Gemini backend error:", error?.message || "unknown error");
     return res.status(502).json({
       success: false,
